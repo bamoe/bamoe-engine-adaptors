@@ -1,0 +1,118 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- POM -->
+    <groupId>com.ibm.techsales.bamoe.engine.adaptors</groupId>
+	<artifactId>bamoe-engine-adaptors</artifactId>
+	<version>1.0.0</version>
+	<packaging>jar</packaging>
+	<name>bamoe-engine-adaptors</name>
+	<description>BAMOE: Embedded Mode Engine Adaptors</description>
+
+    <!-- Global Properties -->
+	<properties>
+		<!-- General Properties -->
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+		<!-- Java Properties -->
+		<java.version>21</java.version>
+		<jandex-maven-plugin.version>1.2.1</jandex-maven-plugin.version>
+
+		<!-- Common Maven Plugins -->
+		<maven.compiler.source>${java.version}</maven.compiler.source>
+		<maven.compiler.target>${java.version}</maven.compiler.target>
+        <maven.compiler.parameters>true</maven.compiler.parameters>
+		<maven.compiler.plugin.version>3.10.1</maven.compiler.plugin.version>
+        <maven.resources.plugin.version>3.2.0</maven.resources.plugin.version>
+		<maven.surefire.plugin.version>3.0.0-M7</maven.surefire.plugin.version>
+
+		<!-- BAMOE -->
+		<bamoe.version>9.3.0-ibm-0007</bamoe.version>
+
+		<!-- Property Management -->
+		<smallrye-config.version>3.14.1</smallrye-config.version>
+
+		<!-- Testing Properties -->
+      	<skipTests>true</skipTests>
+	</properties>
+
+	<!-- Dependency Management -->
+	<dependencyManagement>
+		<dependencies>
+			<!-- BAMOE -->
+			<dependency>
+				<groupId>com.ibm.bamoe</groupId>
+				<artifactId>bamoe-bom</artifactId>
+				<version>${bamoe.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<!-- Dependencies -->
+    <dependencies>
+		<dependency>
+			<groupId>org.kie</groupId>
+			<artifactId>kie-api</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.kie</groupId>
+			<artifactId>kie-dmn-core</artifactId>
+		</dependency>
+
+		<dependency>
+      		<groupId>org.drools</groupId>
+      		<artifactId>drools-core</artifactId>
+    	</dependency>
+
+		<dependency>
+			<groupId>io.smallrye.config</groupId>
+			<artifactId>smallrye-config</artifactId>
+			<version>${smallrye-config.version}</version>
+		</dependency>
+	</dependencies>
+
+	<!-- Build Plugin Management -->
+	<build>
+	    <defaultGoal>install</defaultGoal>
+    	<plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.compiler.plugin.version}</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>${maven.resources.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>default-testResources</id>
+                        <phase>test-compile</phase>
+                        <goals>
+                            <goal>testResources</goal>
+                        </goals>
+                        <configuration>
+                            <resources>
+                                <resource>
+                                    <directory>src/test/resources</directory>
+                                    <excludes>
+                                        <exclude>**/*.*.scesim</exclude>
+                                    </excludes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                      </execution>
+                  </executions>
+            </plugin>
+    	</plugins>
+  	</build>
+</project>
