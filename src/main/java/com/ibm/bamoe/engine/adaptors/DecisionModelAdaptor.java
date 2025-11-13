@@ -1,4 +1,4 @@
-package com.citi.bamoe.engine.adaptors;
+package com.ibm.bamoe.engine.adaptors;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -26,10 +26,10 @@ import org.kie.dmn.api.core.DMNModel;
 import org.kie.dmn.api.core.DMNResult;
 import org.kie.dmn.api.core.DMNRuntime;
 
-import com.citi.bamoe.engine.adaptors.model.ExecutionDuration;
-import com.citi.bamoe.engine.adaptors.model.DecisionResult;
-import com.citi.bamoe.engine.adaptors.model.DecisionModelResults;
-import com.citi.bamoe.engine.adaptors.listeners.DecisionModelEventListener;
+import com.ibm.bamoe.engine.adaptors.model.ExecutionDuration;
+import com.ibm.bamoe.engine.adaptors.model.DecisionResult;
+import com.ibm.bamoe.engine.adaptors.model.DecisionModelResults;
+import com.ibm.bamoe.engine.adaptors.listeners.DecisionModelEventListener;
 
 public class DecisionModelAdaptor {
 

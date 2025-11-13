@@ -1,4 +1,4 @@
-package com.citi.bamoe.engine.adaptors.listeners;
+package com.ibm.bamoe.engine.adaptors.listeners;
 
 import org.kie.dmn.api.core.event.DMNRuntimeEventListener;
 

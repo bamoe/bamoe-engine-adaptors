@@ -69,6 +69,18 @@
       		<artifactId>drools-core</artifactId>
     	</dependency>
 
+		<!-- Stateless Workflow -->
+		<dependency>
+			<groupId>org.kie.kogito</groupId>
+			<artifactId>jbpm-bpmn2</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.kie.kogito</groupId>
+			<artifactId>jbpm-xsd-resources</artifactId>
+		</dependency>
+
+		<!-- Global Property Management and Configuration -->
 		<dependency>
 			<groupId>io.smallrye.config</groupId>
 			<artifactId>smallrye-config</artifactId>

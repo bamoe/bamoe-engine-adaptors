@@ -1,15 +1,14 @@
-package com.citi.bamoe.engine.adaptors.model;
+package com.ibm.bamoe.engine.adaptors.model;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.ArrayList;
 
-public class RuleResults {
+public class DecisionModelResults {
 
     private String startedOn;
     private String completedOn;
-    private int firedRuleCount;
     private ExecutionDuration executionDuration;
-    private List<Object> facts = new ArrayList<Object>();
+    private List<DecisionResult> results = new ArrayList<DecisionResult>();
 
     public String getStartedOn() {
         return this.startedOn;
@@ -27,14 +26,6 @@ public class RuleResults {
         this.completedOn = completedOn;
     }
 
-    public int getFiredRuleCount() {
-        return this.firedRuleCount;
-    }
-
-    public void setFiredRuleCount(int firedRuleCount) {
-        this.firedRuleCount = firedRuleCount;
-    }
-
     public ExecutionDuration getExecutionDuration() {
         return this.executionDuration;
     }
@@ -43,16 +34,16 @@ public class RuleResults {
         this.executionDuration = executionDuration;
     }
 
-    public List<Object> getFacts() {
-        return this.facts;
+    public List<DecisionResult> getResults() {
+        return this.results;
     }
 
-    public void setFacts(List<Object> facts) {
-        this.facts = facts;
+    public void setResults(List<DecisionResult> results) {
+        this.results = results;
     }
 
     @Override
     public String toString() {
-        return "startedOn=" + startedOn + ", completedOn=" + completedOn + ", firedRuleCount=" + firedRuleCount + ", executionDuration=" + executionDuration + ", updatedFacts=" + getFacts();
+        return "startedOn=" + startedOn + ", completedOn=" + completedOn + ", executionDuration=" + executionDuration + ", results=" + getResults();
     }
 }

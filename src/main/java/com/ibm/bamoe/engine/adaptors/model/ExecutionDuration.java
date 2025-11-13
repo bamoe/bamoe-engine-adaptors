@@ -1,4 +1,4 @@
-package com.citi.bamoe.engine.adaptors.model;
+package com.ibm.bamoe.engine.adaptors.model;
 
 public class ExecutionDuration {
 

@@ -1,5 +1,5 @@
-# IBM Business Automation Manager Open Editions - BAMOE Embedded Engine Adaptors
-This repository includes a set of Java engine adaptors for implementing BAMOE in `Embedded Mode`.  
+# IBM Business Automation Manager Open Editions Assets: Embedded Engine Adaptors
+This repository includes a set of Java engine adaptors for implementing IBM BAMOE in `Embedded Mode`.  
 
 ## How To Build 
 This repository is built using `mvn clean install (deploy)` by either the CI/CD pipeline or on a local developer workstation.  Maven `install` places the packaged JAR file into the local Maven `~/.M2/repository`.  Maven `deploy` places the packaged JAR file into the enterprise Maven repository.  This repository relies on application dependencies to be installed into the enterprise Maven repository first.  
