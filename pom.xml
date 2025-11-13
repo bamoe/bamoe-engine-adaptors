@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <!-- POM -->
-    <groupId>com.ibm.techsales.bamoe.engine.adaptors</groupId>
+    <groupId>com.ibm.bamoe.engine.adaptors</groupId>
 	<artifactId>bamoe-engine-adaptors</artifactId>
 	<version>1.0.0</version>
 	<packaging>jar</packaging>
