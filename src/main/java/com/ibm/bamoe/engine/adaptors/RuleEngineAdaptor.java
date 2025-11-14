@@ -27,6 +27,9 @@ import org.kie.internal.command.CommandFactory;
 
 import com.ibm.bamoe.engine.adaptors.model.ExecutionDuration;
 import com.ibm.bamoe.engine.adaptors.model.RuleResults;
+import com.ibm.bamoe.engine.adaptors.model.RuleSetProperties;
+import com.ibm.bamoe.engine.adaptors.model.KieSessionType;
+import com.ibm.bamoe.engine.adaptors.model.KieContainerType;
 import com.ibm.bamoe.engine.adaptors.listeners.RuleEngineAgendaListener;
 import com.ibm.bamoe.engine.adaptors.listeners.RuleEngineWorkingMemoryListener;
 import com.ibm.bamoe.engine.adaptors.listeners.ProcessEventListener;
@@ -36,45 +39,51 @@ public class RuleEngineAdaptor {
     private static final Logger logger = LoggerFactory.getLogger(RuleEngineAdaptor.class);
 
     private static final String DATE_TIME_FORMAT        = "yyyy-MM-dd HH:mm:ss";
-    private static final String KIE_BASE_NAME           = "kiebase.name";
-    private static final String KIE_SESSION_NAME        = "kiesession.name";
-    private static final String KIE_SESSION_TYPE        = "kiesession.type";
+    private static final String KIE_BASE_NAME           = "kie-base.name";
+    private static final String RELEASE_ID              = "release.id";
+    private static final String KIE_SESSION_NAME        = "kie-session.name";
+    private static final String KIE_SESSION_TYPE        = "kie-session.type";
+    private static final String KIE_CONTAINER_TYPE      = "kie-container.type";
     private static final String RULEFLOW_NAME           = "ruleflow.name";
-    private static final String EXECUTION_MODE          = "execution.mode";
     private static final String ENABLE_AGENDA_LISTENER  = "enable.agenda.listener";
     private static final String ENABLE_WM_LISTENER      = "enable.working-memory.listener";
     private static final String ENABLE_PROCESS_LISTENER = "enable.process.listener";
 
-    public RuleResults execute(final String ruleSet, Map<String,Object> facts) throws Exception {
+    public RuleResults execute(final String ruleSetName, Map<String,Object> facts) throws Exception {
 
         // Load all the properties we need for execution
-        logger.debug("Loading ruleset properties...");
+        logger.debug("Loading ruleset properties for: " + ruleSetName);
 
         // Load from various property files in the classpath 
         var smallRyeConfig = ConfigProvider.getConfig().unwrap(SmallRyeConfig.class);
-        String kieBaseName = smallRyeConfig.getValue(ruleSet + "." + KIE_BASE_NAME, String.class);
-        String kieSessionName = smallRyeConfig.getValue(ruleSet + "." + KIE_SESSION_NAME, String.class);
-        String kieSessionType = smallRyeConfig.getValue(ruleSet + "." + KIE_SESSION_TYPE, String.class);
-        String executionMode = smallRyeConfig.getValue(ruleSet + "." + EXECUTION_MODE, String.class);
-        String ruleFlowName = smallRyeConfig.getValue(ruleSet + "." + RULEFLOW_NAME, String.class);
-        boolean enableAgendaListener = smallRyeConfig.getValue(ruleSet + "." + ENABLE_AGENDA_LISTENER, Boolean.class);
-        boolean enableWorkingMemoryListener = smallRyeConfig.getValue(ruleSet + "." + ENABLE_WM_LISTENER, Boolean.class);
-        boolean enableProcessListener = smallRyeConfig.getValue(ruleSet + "." + ENABLE_PROCESS_LISTENER, Boolean.class);
 
-        return execute(ruleSet, ruleFlowName, executionMode, kieBaseName, kieSessionName, kieSessionType, facts, enableAgendaListener, enableWorkingMemoryListener, enableProcessListener);
+        // Package as a set of properties for the ruleset
+        RuleSetProperties properties = new RuleSetProperties();
+        properties.setName(ruleSetName);
+        properties.setReleaseId(smallRyeConfig.getValue(ruleSetName + "." + RELEASE_ID, String.class));
+        properties.setKieBaseName(smallRyeConfig.getValue(ruleSetName + "." + KIE_BASE_NAME, String.class));
+        properties.setKieSessionName(smallRyeConfig.getValue(ruleSetName + "." + KIE_SESSION_NAME, String.class));
+        properties.setKieSessionType(smallRyeConfig.getValue(ruleSetName + "." + KIE_SESSION_TYPE, KieSessionType.class));
+        properties.setKieContainerType(smallRyeConfig.getValue(ruleSetName + "." + KIE_CONTAINER_TYPE, KieContainerType.class));
+        properties.setRuleFlowName(smallRyeConfig.getValue(ruleSetName + "." + RULEFLOW_NAME, String.class));
+        properties.setRuleAgendaListenerEnabled(smallRyeConfig.getValue(ruleSetName + "." + ENABLE_AGENDA_LISTENER, Boolean.class));
+        properties.setRuleWorkingMemoryListenerEnabled(smallRyeConfig.getValue(ruleSetName + "." + ENABLE_WM_LISTENER, Boolean.class));
+        properties.setProcessListenerEnabled(smallRyeConfig.getValue(ruleSetName + "." + ENABLE_PROCESS_LISTENER, Boolean.class));
+
+        return execute(properties, facts);
     }
 
-    public RuleResults execute(final String ruleSet, final String ruleFlowName, final String executionMode, final String kieBaseName, final String kieSessionName, final String kieSessionType, Map<String,Object> facts, final boolean enableAgendaListener, final boolean enableWorkingMemoryListener, final boolean enableProcessListener) throws Exception {
+    public RuleResults execute(final RuleSetProperties properties, Map<String,Object> facts) throws Exception {
 
         // Mark the start time
         LocalDateTime startedOn = LocalDateTime.now();
-        logger.debug("Executing ruleset: name=" + ruleSet + "...");
+        logger.debug("Executing ruleset: name=" + properties.getName() + "...");
 
         // Create the kieSesion, kieContainer, and kieBase
-        logger.debug("Creating KIE services and container objects for kieBase=" + kieBaseName  + "...");
+        logger.debug("Creating KIE services and container objects for kieBase=" + properties.getKieBaseName()  + "...");
         KieServices kieServices = KieServices.Factory.get();
-        KieContainer kieContainer = createKieContainer(kieServices, executionMode);
-        KieBase kieBase = kieContainer.getKieBase(kieBaseName);          
+        KieContainer kieContainer = createKieContainer(kieServices, properties.getKieContainerType(), properties.getReleaseId());
+        KieBase kieBase = kieContainer.getKieBase(properties.getKieBaseName());          
 
         // Prepare the facts for the engine
         logger.debug("Inserting facts into rule engine instance...");
@@ -87,15 +96,15 @@ public class RuleEngineAdaptor {
         }
 
         // Add a stateless workflow, if it exists
-        if (ruleFlowName != null && !ruleFlowName.equalsIgnoreCase("none")) {
-            commands.add(CommandFactory.newStartProcess(ruleFlowName));
+        if (properties.getRuleFlowName() != null && !properties.getRuleFlowName().equalsIgnoreCase("none")) {
+            commands.add(CommandFactory.newStartProcess(properties.getRuleFlowName()));
         }
 
         // Add other batch commands
         commands.add(CommandFactory.newFireAllRules());        
 
         // Execute the session
-        ExecutionResults executionResults = executeSession(kieContainer, kieSessionName, kieSessionType, commands, enableAgendaListener, enableWorkingMemoryListener, enableProcessListener);
+        ExecutionResults executionResults = executeSession(kieContainer, properties, commands);
 
         // Mark completion time        
         LocalDateTime completedOn = LocalDateTime.now();
@@ -118,30 +127,57 @@ public class RuleEngineAdaptor {
         return results;
     }
 
-    private ExecutionResults executeSession(final KieContainer kieContainer, final String kieSessionName, final String kieSessionType, List<Command> commands, final boolean enableAgendaListener, final boolean enableWorkingMemoryListener, final boolean enableProcessListener) {
+    private ExecutionResults executeSession(final KieContainer kieContainer, final RuleSetProperties properties, List<Command> commands) throws Exception {
 
-        logger.debug("Creating KIE session: name=" + kieSessionName + ", type=" + kieSessionType + "...");
+        logger.debug("Creating KIE session: name=" + properties.getKieSessionName() + ", type=" + properties.getKieSessionType() + "...");
         ExecutionResults results = null;
 
-        // Stateful sessions are the default
-        if (kieSessionType == null || kieSessionType.isEmpty() || kieSessionType.equalsIgnoreCase("stateful")) {
+        // Stateless sessions are the default
+        if (properties.getKieSessionType() == KieSessionType.STATELESS) {
 
-            KieSession kieSession = kieContainer.newKieSession(kieSessionName);
+            StatelessKieSession kieSession = kieContainer.newStatelessKieSession(properties.getKieSessionName());
 
             // Add event listeners
-            if (enableAgendaListener) {
+            if (properties.isRuleAgendaListenerEnabled()) {
 
                 logger.debug("Attaching rule engine agenda listener...");
                 kieSession.addEventListener(new RuleEngineAgendaListener());
             }
 
-            if (enableWorkingMemoryListener) {
+            if (properties.isRuleWorkingMemoryListenerEnabled()) {
 
                 logger.debug("Attaching rule engine working memory listener...");
                 kieSession.addEventListener(new RuleEngineWorkingMemoryListener());
             }
 
-            if (enableProcessListener) {
+            if (properties.isProcessListenerEnabled()) {
+
+                logger.debug("Attaching process listener...");
+                kieSession.addEventListener(new ProcessEventListener());
+            }
+
+            // Execute the rules
+            logger.debug("Executing ruleset...");
+            results = kieSession.execute(CommandFactory.newBatchExecution(commands));
+
+        } else if (properties.getKieSessionType() == KieSessionType.STATEFUL) {
+
+            KieSession kieSession = kieContainer.newKieSession(properties.getKieSessionName());
+
+            // Add event listeners
+            if (properties.isRuleAgendaListenerEnabled()) {
+
+                logger.debug("Attaching rule engine agenda listener...");
+                kieSession.addEventListener(new RuleEngineAgendaListener());
+            }
+
+            if (properties.isRuleWorkingMemoryListenerEnabled()) {
+
+                logger.debug("Attaching rule engine working memory listener...");
+                kieSession.addEventListener(new RuleEngineWorkingMemoryListener());
+            }
+
+            if (properties.isProcessListenerEnabled()) {
 
                 logger.debug("Attaching process listener...");
                 kieSession.addEventListener(new ProcessEventListener());
@@ -154,47 +190,26 @@ public class RuleEngineAdaptor {
             // Cleanup the kieSession
             kieSession.dispose();
         } else {
-
-            StatelessKieSession kieSession = kieContainer.newStatelessKieSession(kieSessionName);
-
-            // Add event listeners
-            if (enableAgendaListener) {
-
-                logger.debug("Attaching rule engine agenda listener...");
-                kieSession.addEventListener(new RuleEngineAgendaListener());
-            }
-
-            if (enableWorkingMemoryListener) {
-
-                logger.debug("Attaching rule engine working memory listener...");
-                kieSession.addEventListener(new RuleEngineWorkingMemoryListener());
-            }
-
-            if (enableProcessListener) {
-
-                logger.debug("Attaching process listener...");
-                kieSession.addEventListener(new ProcessEventListener());
-            }
-
-            // Execute the rules
-            logger.debug("Executing ruleset...");
-            results = kieSession.execute(CommandFactory.newBatchExecution(commands));
+            throw new Exception("Unsupported KIE Session type: " + properties.getKieSessionType());
         }
 
         return results;
     }
 
-    private KieContainer createKieContainer(final KieServices kieServices, final String executionMode) {
+    private KieContainer createKieContainer(final KieServices kieServices, final KieContainerType kieContainerType, final String releaseId) throws Exception {
 
         KieContainer kieContainer = null;
 
-        if (executionMode == null || executionMode.isEmpty() || executionMode.equalsIgnoreCase("classpath")) {
+        if (kieContainerType == KieContainerType.CLASSPATH) {
+
             logger.debug("Creating classpath container...");
             kieContainer = kieServices.getKieClasspathContainer();        
-        } else {
+        } else if (kieContainerType == KieContainerType.RELEASE_ID) {
+
             logger.debug("Creating releaseId container...");
-            ReleaseId releaseId = new ReleaseIdImpl(executionMode);
-            kieContainer = kieServices.newKieContainer(releaseId);
+            kieContainer = kieServices.newKieContainer(new ReleaseIdImpl(releaseId));
+        } else {
+           throw new Exception("Unsupported KIE container type: " + kieContainerType);
         }
 
         return kieContainer;
