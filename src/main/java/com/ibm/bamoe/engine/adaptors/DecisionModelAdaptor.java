@@ -42,8 +42,8 @@ public class DecisionModelAdaptor {
     private static final String KIE_BASE_NAME       = "kie-base.name";
     private static final String KIE_CONTAINER_TYPE  = "kie-container.type";
     private static final String RELEASE_ID          = "release.id";
-    private static final String DMN_MODEL_NAME      = "dmn.model.name";
-    private static final String DMN_MODEL_NAMESPACE = "dmn.model.namespace";
+    private static final String DMN_MODEL_NAME      = "dmn-model.name";
+    private static final String DMN_MODEL_NAMESPACE = "dmn-model.namespace";
     private static final String ENABLE_LISTENER     = "enable.listener";
 
     public DecisionModelResults execute(final String decisionModelName, Map<String,Object> facts) throws Exception {
