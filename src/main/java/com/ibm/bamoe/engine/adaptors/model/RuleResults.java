@@ -10,6 +10,7 @@ public class RuleResults {
     private int firedRuleCount;
     private ExecutionDuration executionDuration;
     private List<Object> facts = new ArrayList<Object>();
+    private List<String> rulesFired = new ArrayList<String>();
 
     public String getStartedOn() {
         return this.startedOn;
@@ -51,8 +52,16 @@ public class RuleResults {
         this.facts = facts;
     }
 
+    public List<String> getRulesFired() {
+        return this.rulesFired;
+    }
+
+    public void setRulesFired(List<String> rulesFired) {
+        this.rulesFired = rulesFired;
+    }
+
     @Override
     public String toString() {
-        return "startedOn=" + startedOn + ", completedOn=" + completedOn + ", firedRuleCount=" + firedRuleCount + ", executionDuration=" + executionDuration + ", updatedFacts=" + getFacts();
+        return "startedOn=" + startedOn + ", completedOn=" + completedOn + ", firedRuleCount=" + firedRuleCount + ", executionDuration=" + executionDuration + ", firedRules=" + rulesFired + ", updatedFacts=" + getFacts();
     }
 }

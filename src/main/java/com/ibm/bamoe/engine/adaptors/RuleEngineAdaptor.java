@@ -19,7 +19,6 @@ import org.kie.api.KieServices;
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.StatelessKieSession;
-import org.kie.api.runtime.ExecutionResults;
 import org.kie.api.command.Command;
 import org.kie.api.builder.ReleaseId;
 import org.kie.util.maven.support.ReleaseIdImpl;
@@ -104,7 +103,80 @@ public class RuleEngineAdaptor {
         commands.add(CommandFactory.newFireAllRules());        
 
         // Execute the session
-        ExecutionResults executionResults = executeSession(kieContainer, properties, commands);
+        RuleResults results = executeSession(kieContainer, properties, commands, startedOn);
+
+        // Add the updated facts
+        results.getFacts().add(facts);
+
+        // Return the results
+        return results;
+    }
+
+    private RuleResults executeSession(final KieContainer kieContainer, final RuleSetProperties properties, List<Command> commands, LocalDateTime startedOn) throws Exception {
+
+        logger.debug("Creating KIE session: name=" + properties.getKieSessionName() + ", type=" + properties.getKieSessionType() + "...");
+        RuleEngineAgendaListener ruleAgendaListener = new RuleEngineAgendaListener();;
+
+        // Stateless sessions are the default
+        if (properties.getKieSessionType() == KieSessionType.STATELESS) {
+
+            StatelessKieSession kieSession = kieContainer.newStatelessKieSession(properties.getKieSessionName());
+
+            // Add event listeners
+            if (properties.isRuleAgendaListenerEnabled()) {
+
+                logger.debug("Attaching rule engine agenda listener...");
+                kieSession.addEventListener(ruleAgendaListener);
+            }
+
+            if (properties.isRuleWorkingMemoryListenerEnabled()) {
+
+                logger.debug("Attaching rule engine working memory listener...");
+                kieSession.addEventListener(new RuleEngineWorkingMemoryListener());
+            }
+
+            if (properties.isProcessListenerEnabled()) {
+
+                logger.debug("Attaching process listener...");
+                kieSession.addEventListener(new ProcessEventListener());
+            }
+
+            // Execute the rules
+            logger.debug("Executing ruleset...");
+            kieSession.execute(CommandFactory.newBatchExecution(commands));
+
+        } else if (properties.getKieSessionType() == KieSessionType.STATEFUL) {
+
+            KieSession kieSession = kieContainer.newKieSession(properties.getKieSessionName());
+
+            // Add event listeners
+            if (properties.isRuleAgendaListenerEnabled()) {
+
+                logger.debug("Attaching rule engine agenda listener...");
+                kieSession.addEventListener(ruleAgendaListener);
+            }
+
+            if (properties.isRuleWorkingMemoryListenerEnabled()) {
+
+                logger.debug("Attaching rule engine working memory listener...");
+                kieSession.addEventListener(new RuleEngineWorkingMemoryListener());
+            }
+
+            if (properties.isProcessListenerEnabled()) {
+
+                logger.debug("Attaching process listener...");
+                kieSession.addEventListener(new ProcessEventListener());
+            }
+
+            // Execute the rules
+            logger.debug("Executing ruleset...");
+            kieSession.execute(CommandFactory.newBatchExecution(commands));
+
+            // Cleanup the kieSession
+            kieSession.dispose();
+        } else {
+            throw new Exception("Unsupported KIE Session type: " + properties.getKieSessionType());
+        }
 
         // Mark completion time        
         LocalDateTime completedOn = LocalDateTime.now();
@@ -119,78 +191,11 @@ public class RuleEngineAdaptor {
         results.setCompletedOn(formatLocalDateTime(completedOn));
         results.setExecutionDuration(duration);
 
-        // Add the updated facts
-        results.getFacts().add(facts);
-        logger.debug("Rule Execution Results: " + results);
+        // Add the list of rules that fired as well as the count
+        if (ruleAgendaListener != null) {
 
-        // Return the results
-        return results;
-    }
-
-    private ExecutionResults executeSession(final KieContainer kieContainer, final RuleSetProperties properties, List<Command> commands) throws Exception {
-
-        logger.debug("Creating KIE session: name=" + properties.getKieSessionName() + ", type=" + properties.getKieSessionType() + "...");
-        ExecutionResults results = null;
-
-        // Stateless sessions are the default
-        if (properties.getKieSessionType() == KieSessionType.STATELESS) {
-
-            StatelessKieSession kieSession = kieContainer.newStatelessKieSession(properties.getKieSessionName());
-
-            // Add event listeners
-            if (properties.isRuleAgendaListenerEnabled()) {
-
-                logger.debug("Attaching rule engine agenda listener...");
-                kieSession.addEventListener(new RuleEngineAgendaListener());
-            }
-
-            if (properties.isRuleWorkingMemoryListenerEnabled()) {
-
-                logger.debug("Attaching rule engine working memory listener...");
-                kieSession.addEventListener(new RuleEngineWorkingMemoryListener());
-            }
-
-            if (properties.isProcessListenerEnabled()) {
-
-                logger.debug("Attaching process listener...");
-                kieSession.addEventListener(new ProcessEventListener());
-            }
-
-            // Execute the rules
-            logger.debug("Executing ruleset...");
-            results = kieSession.execute(CommandFactory.newBatchExecution(commands));
-
-        } else if (properties.getKieSessionType() == KieSessionType.STATEFUL) {
-
-            KieSession kieSession = kieContainer.newKieSession(properties.getKieSessionName());
-
-            // Add event listeners
-            if (properties.isRuleAgendaListenerEnabled()) {
-
-                logger.debug("Attaching rule engine agenda listener...");
-                kieSession.addEventListener(new RuleEngineAgendaListener());
-            }
-
-            if (properties.isRuleWorkingMemoryListenerEnabled()) {
-
-                logger.debug("Attaching rule engine working memory listener...");
-                kieSession.addEventListener(new RuleEngineWorkingMemoryListener());
-            }
-
-            if (properties.isProcessListenerEnabled()) {
-
-                logger.debug("Attaching process listener...");
-                kieSession.addEventListener(new ProcessEventListener());
-            }
-
-            // Execute the rules
-            logger.debug("Executing ruleset...");
-            results = kieSession.execute(CommandFactory.newBatchExecution(commands));
-
-            // Cleanup the kieSession
-            kieSession.dispose();
-        } else {
-            throw new Exception("Unsupported KIE Session type: " + properties.getKieSessionType());
+            results.setFiredRuleCount(ruleAgendaListener.getRulesFired().size());
+            results.setRulesFired(ruleAgendaListener.getRulesFired());
         }
 
         return results;
