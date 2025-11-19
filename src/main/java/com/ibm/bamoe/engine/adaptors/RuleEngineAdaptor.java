@@ -3,6 +3,7 @@ package com.ibm.bamoe.engine.adaptors;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.HashMap;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -50,6 +51,12 @@ public class RuleEngineAdaptor {
 
     public RuleResults execute(final String ruleSetName, Map<String,Object> facts) throws Exception {
 
+        Map<String, Object> globals = new HashMap<String, Object>();
+        return execute(ruleSetName, facts, globals);
+    }
+
+    public RuleResults execute(final String ruleSetName, Map<String,Object> facts, Map<String,Object> globals) throws Exception {
+
         // Load all the properties we need for execution
         logger.debug("Loading ruleset properties for: " + ruleSetName);
 
@@ -69,10 +76,10 @@ public class RuleEngineAdaptor {
         properties.setRuleWorkingMemoryListenerEnabled(smallRyeConfig.getValue(ruleSetName + "." + ENABLE_WM_LISTENER, Boolean.class));
         properties.setProcessListenerEnabled(smallRyeConfig.getValue(ruleSetName + "." + ENABLE_PROCESS_LISTENER, Boolean.class));
 
-        return execute(properties, facts);
+        return execute(properties, facts, globals);
     }
 
-    public RuleResults execute(final RuleSetProperties properties, Map<String,Object> facts) throws Exception {
+    public RuleResults execute(final RuleSetProperties properties, Map<String,Object> facts, Map<String,Object> globals) throws Exception {
 
         // Mark the start time
         LocalDateTime startedOn = LocalDateTime.now();
@@ -85,13 +92,21 @@ public class RuleEngineAdaptor {
         KieBase kieBase = kieContainer.getKieBase(properties.getKieBaseName());          
 
         // Prepare the facts for the engine
-        logger.debug("Inserting facts into rule engine instance...");
-
         List<Command> commands = new ArrayList<Command>();
+
+        logger.debug("Inserting facts into rule engine instance...");
         for (Map.Entry<String, Object> fact : facts.entrySet()) {
 
-            logger.debug(fact.getKey() + " -> " + fact.getValue());
+            logger.debug("Fact: key=" + fact.getKey() + ", value=" + fact.getValue());
             commands.add(CommandFactory.newInsert(fact.getValue(), fact.getKey()));
+        }
+
+        // Add global variables
+        logger.debug("Inserting global variables into rule engine instance...");
+        for (Map.Entry<String, Object> global : globals.entrySet()) {
+
+            logger.debug("Global variable: key=" + global.getKey() + ", value=" + global.getValue());
+            commands.add(CommandFactory.newSetGlobal(global.getKey(), global.getValue()));
         }
 
         // Add a stateless workflow, if it exists
@@ -106,7 +121,14 @@ public class RuleEngineAdaptor {
         RuleResults results = executeSession(kieContainer, properties, commands, startedOn);
 
         // Add the updated facts
-        results.getFacts().add(facts);
+        for (Map.Entry<String, Object> fact : facts.entrySet()) {
+            results.getFacts().add(fact.getValue());
+        }
+
+        // Add the updated globals
+        for (Map.Entry<String, Object> global : globals.entrySet()) {
+            results.getGlobals().add(global.getValue());
+        }
 
         // Return the results
         return results;
