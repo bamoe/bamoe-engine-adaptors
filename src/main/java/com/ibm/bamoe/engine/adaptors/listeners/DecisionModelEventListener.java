@@ -23,42 +23,42 @@ public class DecisionModelEventListener implements DMNRuntimeEventListener {
 
     @Override
     public void beforeEvaluateDecision(BeforeEvaluateDecisionEvent event) {
-        logger.info("beforeEvaluateDecision: {}" + event);
+        logger.debug("beforeEvaluateDecision: {}" + event);
     }
 
     @Override
     public void afterEvaluateDecision(AfterEvaluateDecisionEvent event) {
-        logger.info("beforeEvaluateDecision: {}" + event);
+        logger.debug("beforeEvaluateDecision: {}" + event);
     }
 
     @Override
     public void beforeEvaluateContextEntry(BeforeEvaluateContextEntryEvent event) {
-        logger.info("afterEvaluateDecision: {}" + event);
+        logger.debug("afterEvaluateDecision: {}" + event);
     }
 
     @Override
     public void afterEvaluateContextEntry(AfterEvaluateContextEntryEvent event) {
-        logger.info("afterEvaluateContextEntry: {}" + event);
+        logger.debug("afterEvaluateContextEntry: {}" + event);
     }
 
     @Override
     public void beforeEvaluateDecisionTable(BeforeEvaluateDecisionTableEvent event) {
-        logger.info("beforeEvaluateDecisionTable: {}" + event);
+        logger.debug("beforeEvaluateDecisionTable: {}" + event);
     }
 
     @Override
     public void afterEvaluateDecisionTable(AfterEvaluateDecisionTableEvent event) {
-        logger.info("afterEvaluateDecisionTable: {}" + event);
+        logger.debug("afterEvaluateDecisionTable: {}" + event);
     }
 
     @Override
     public void beforeEvaluateAll(BeforeEvaluateAllEvent event) {
-        logger.info("beforeEvaluateAll: {}" + event);
+        logger.debug("beforeEvaluateAll: {}" + event);
     }
 
     @Override
     public void afterEvaluateAll(AfterEvaluateAllEvent event) {
-        logger.info("afterEvaluateAll: {}" + event);
+        logger.debug("afterEvaluateAll: {}" + event);
     }
 }
 
