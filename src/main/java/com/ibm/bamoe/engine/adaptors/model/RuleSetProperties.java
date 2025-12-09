@@ -11,6 +11,7 @@ public class RuleSetProperties {
     private KieSessionType kieSessionType = KieSessionType.STATELESS;
     private KieContainerType kieContainerType = KieContainerType.CLASSPATH;
     private String ruleFlowName;
+    private String ruleFlowGroup;
     private boolean ruleAgendaListenerEnabled = false;
     private boolean ruleWorkingMemoryListenerEnabled = false;
     private boolean processListenerEnabled = false;
@@ -71,6 +72,14 @@ public class RuleSetProperties {
         this.ruleFlowName = ruleFlowName;
     }
 
+    public String getRuleFlowGroup() {
+        return this.ruleFlowGroup;
+    }
+
+    public void setRuleFlowGroup(String ruleFlowGroup) {
+        this.ruleFlowGroup = ruleFlowGroup;
+    }
+
     public boolean isRuleAgendaListenerEnabled() {
         return this.ruleAgendaListenerEnabled;
     }
@@ -109,6 +118,6 @@ public class RuleSetProperties {
     
     @Override
     public String toString() {
-        return "[RuleSetProperties: name=" + name + ", releaseId=" + releaseId + ", kieBaseName=" + kieBaseName + ", kieSessionName=" + kieSessionName + ", kieSessionType=" + kieSessionType + ", kieContainerType=" + kieContainerType + ", ruleFlowName=" + ruleFlowName + ", ruleAgendaListenerEnabled=" + ruleAgendaListenerEnabled + ", ruleWorkingMemoryListenerEnabled=" + ruleWorkingMemoryListenerEnabled + ", processListenerEnabled=" + processListenerEnabled + "]";
+        return "[RuleSetProperties: name=" + name + ", releaseId=" + releaseId + ", kieBaseName=" + kieBaseName + ", kieSessionName=" + kieSessionName + ", kieSessionType=" + kieSessionType + ", kieContainerType=" + kieContainerType + ", ruleFlowName=" + ruleFlowName + ", ruleFlowGroup" + ruleFlowGroup + ", ruleAgendaListenerEnabled=" + ruleAgendaListenerEnabled + ", ruleWorkingMemoryListenerEnabled=" + ruleWorkingMemoryListenerEnabled + ", processListenerEnabled=" + processListenerEnabled + "]";
     }
 }
