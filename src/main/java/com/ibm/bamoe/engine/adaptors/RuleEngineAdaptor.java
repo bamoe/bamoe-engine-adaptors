@@ -114,7 +114,7 @@ public class RuleEngineAdaptor {
 
         // Add a stateless workflow, if it exists
         if (properties.getRuleFlowName() != null && !properties.getRuleFlowName().equalsIgnoreCase("none")) {
-            commands.add(CommandFactory.newStartProcess(properties.getRuleFlowName()));
+            commands.add(CommandFactory.newStartProcess(properties.getRuleFlowName(), facts));
         }
 
         // Add other batch commands
