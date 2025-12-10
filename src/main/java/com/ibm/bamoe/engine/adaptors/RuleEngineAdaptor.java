@@ -45,8 +45,6 @@ public class RuleEngineAdaptor {
     private static final String KIE_SESSION_NAME        = "kie-session.name";
     private static final String KIE_SESSION_TYPE        = "kie-session.type";
     private static final String KIE_CONTAINER_TYPE      = "kie-container.type";
-    private static final String RULEFLOW_NAME           = "ruleflow.name";
-    private static final String DEFAULT_RULEFLOW_GROUP  = "default.ruleflow.group";
     private static final String ENABLE_AGENDA_LISTENER  = "enable.agenda.listener";
     private static final String ENABLE_WM_LISTENER      = "enable.working-memory.listener";
     private static final String ENABLE_PROCESS_LISTENER = "enable.process.listener";
@@ -73,8 +71,6 @@ public class RuleEngineAdaptor {
         properties.setKieSessionName(smallRyeConfig.getValue(ruleSetName + "." + KIE_SESSION_NAME, String.class));
         properties.setKieSessionType(smallRyeConfig.getValue(ruleSetName + "." + KIE_SESSION_TYPE, KieSessionType.class));
         properties.setKieContainerType(smallRyeConfig.getValue(ruleSetName + "." + KIE_CONTAINER_TYPE, KieContainerType.class));
-        properties.setRuleFlowName(smallRyeConfig.getValue(ruleSetName + "." + RULEFLOW_NAME, String.class));
-        properties.setRuleFlowGroup(smallRyeConfig.getValue(ruleSetName + "." + DEFAULT_RULEFLOW_GROUP, String.class));
         properties.setRuleAgendaListenerEnabled(smallRyeConfig.getValue(ruleSetName + "." + ENABLE_AGENDA_LISTENER, Boolean.class));
         properties.setRuleWorkingMemoryListenerEnabled(smallRyeConfig.getValue(ruleSetName + "." + ENABLE_WM_LISTENER, Boolean.class));
         properties.setProcessListenerEnabled(smallRyeConfig.getValue(ruleSetName + "." + ENABLE_PROCESS_LISTENER, Boolean.class));
@@ -110,11 +106,6 @@ public class RuleEngineAdaptor {
 
             logger.debug("Global variable: key=" + global.getKey() + ", value=" + global.getValue());
             commands.add(CommandFactory.newSetGlobal(global.getKey(), global.getValue()));
-        }
-
-        // Add a stateless workflow, if it exists
-        if (properties.getRuleFlowName() != null && !properties.getRuleFlowName().equalsIgnoreCase("none")) {
-            commands.add(CommandFactory.newStartProcess(properties.getRuleFlowName(), facts));
         }
 
         // Add other batch commands
@@ -191,11 +182,6 @@ public class RuleEngineAdaptor {
 
                 logger.debug("Attaching process listener...");
                 kieSession.addEventListener(new ProcessEventListener());
-            }
-
-            // Add the default rule group, if it exists
-            if (properties.getRuleFlowGroup() != null && !properties.getRuleFlowGroup().equalsIgnoreCase("none")) {
-                ((InternalAgenda) kieSession.getAgenda()).activateRuleFlowGroup(properties.getRuleFlowGroup());
             }
 
             // Execute the rules
