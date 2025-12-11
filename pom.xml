@@ -29,7 +29,7 @@
 		<maven.surefire.plugin.version>3.0.0-M7</maven.surefire.plugin.version>
 
 		<!-- BAMOE -->
-		<bamoe.version>9.3.0-ibm-0007</bamoe.version>
+		<bamoe.version>9.3.1-ibm-0006</bamoe.version>
 
 		<!-- Property Management -->
 		<smallrye-config.version>3.14.1</smallrye-config.version>
