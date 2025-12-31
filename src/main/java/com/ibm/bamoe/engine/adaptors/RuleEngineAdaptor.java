@@ -31,6 +31,7 @@ import com.ibm.bamoe.engine.adaptors.model.RuleResults;
 import com.ibm.bamoe.engine.adaptors.model.RuleSetProperties;
 import com.ibm.bamoe.engine.adaptors.model.KieSessionType;
 import com.ibm.bamoe.engine.adaptors.model.KieContainerType;
+import com.ibm.bamoe.engine.adaptors.listeners.RuleEngineTraceListener;
 import com.ibm.bamoe.engine.adaptors.listeners.RuleEngineAgendaListener;
 import com.ibm.bamoe.engine.adaptors.listeners.RuleEngineWorkingMemoryListener;
 import com.ibm.bamoe.engine.adaptors.listeners.ProcessEventListener;
@@ -45,6 +46,7 @@ public class RuleEngineAdaptor {
     private static final String KIE_SESSION_NAME        = "kie-session.name";
     private static final String KIE_SESSION_TYPE        = "kie-session.type";
     private static final String KIE_CONTAINER_TYPE      = "kie-container.type";
+    private static final String ENABLE_RULE_TRACE       = "enable.rule.trace";
     private static final String ENABLE_AGENDA_LISTENER  = "enable.agenda.listener";
     private static final String ENABLE_WM_LISTENER      = "enable.working-memory.listener";
     private static final String ENABLE_PROCESS_LISTENER = "enable.process.listener";
@@ -71,6 +73,7 @@ public class RuleEngineAdaptor {
         properties.setKieSessionName(smallRyeConfig.getValue(ruleSetName + "." + KIE_SESSION_NAME, String.class));
         properties.setKieSessionType(smallRyeConfig.getValue(ruleSetName + "." + KIE_SESSION_TYPE, KieSessionType.class));
         properties.setKieContainerType(smallRyeConfig.getValue(ruleSetName + "." + KIE_CONTAINER_TYPE, KieContainerType.class));
+        properties.setRuleTraceEnabled(smallRyeConfig.getValue(ruleSetName + "." + ENABLE_RULE_TRACE, Boolean.class));
         properties.setRuleAgendaListenerEnabled(smallRyeConfig.getValue(ruleSetName + "." + ENABLE_AGENDA_LISTENER, Boolean.class));
         properties.setRuleWorkingMemoryListenerEnabled(smallRyeConfig.getValue(ruleSetName + "." + ENABLE_WM_LISTENER, Boolean.class));
         properties.setProcessListenerEnabled(smallRyeConfig.getValue(ruleSetName + "." + ENABLE_PROCESS_LISTENER, Boolean.class));
@@ -131,7 +134,7 @@ public class RuleEngineAdaptor {
     private RuleResults executeSession(final KieContainer kieContainer, final RuleSetProperties properties, List<Command> commands, LocalDateTime startedOn) throws Exception {
 
         logger.debug("Creating KIE session: name=" + properties.getKieSessionName() + ", type=" + properties.getKieSessionType() + "...");
-        RuleEngineAgendaListener ruleAgendaListener = new RuleEngineAgendaListener();;
+        RuleEngineTraceListener ruleEngineTraceListener = new RuleEngineTraceListener();
 
         // Stateless sessions are the default
         if (properties.getKieSessionType() == KieSessionType.STATELESS) {
@@ -139,10 +142,16 @@ public class RuleEngineAdaptor {
             StatelessKieSession kieSession = kieContainer.newStatelessKieSession(properties.getKieSessionName());
 
             // Add event listeners
+            if (properties.isRuleTraceEnabled()) {
+
+                logger.debug("Attaching rule trace listener...");
+                kieSession.addEventListener(ruleEngineTraceListener);
+            }
+
             if (properties.isRuleAgendaListenerEnabled()) {
 
                 logger.debug("Attaching rule engine agenda listener...");
-                kieSession.addEventListener(ruleAgendaListener);
+                kieSession.addEventListener(new RuleEngineAgendaListener());
             }
 
             if (properties.isRuleWorkingMemoryListenerEnabled()) {
@@ -166,10 +175,16 @@ public class RuleEngineAdaptor {
             KieSession kieSession = kieContainer.newKieSession(properties.getKieSessionName());
 
             // Add event listeners
+            if (properties.isRuleTraceEnabled()) {
+
+                logger.debug("Attaching rule trace listener...");
+                kieSession.addEventListener(ruleEngineTraceListener);
+            }
+
             if (properties.isRuleAgendaListenerEnabled()) {
 
                 logger.debug("Attaching rule engine agenda listener...");
-                kieSession.addEventListener(ruleAgendaListener);
+                kieSession.addEventListener(new RuleEngineAgendaListener());
             }
 
             if (properties.isRuleWorkingMemoryListenerEnabled()) {
@@ -208,10 +223,10 @@ public class RuleEngineAdaptor {
         results.setExecutionDuration(duration);
 
         // Add the list of rules that fired as well as the count
-        if (ruleAgendaListener != null) {
+        if (ruleEngineTraceListener != null) {
 
-            results.setFiredRuleCount(ruleAgendaListener.getRulesFired().size());
-            results.setRulesFired(ruleAgendaListener.getRulesFired());
+            results.setFiredRuleCount(ruleEngineTraceListener.getRulesFired().size());
+            results.setRulesFired(ruleEngineTraceListener.getRulesFired());
         }
 
         return results;

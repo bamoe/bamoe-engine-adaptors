@@ -1,8 +1,5 @@
 package com.ibm.bamoe.engine.adaptors.listeners;
 
-import java.util.List;
-import java.util.ArrayList;
-
 import org.drools.core.event.DefaultAgendaEventListener;
 import org.kie.api.event.rule.AgendaEventListener;
 import org.kie.api.event.rule.AfterMatchFiredEvent;
@@ -18,20 +15,8 @@ public class RuleEngineAgendaListener extends DefaultAgendaEventListener {
 
     private static final Logger logger = LoggerFactory.getLogger(RuleEngineAgendaListener.class);
 
-    private List<String> rulesFired = new ArrayList<String>();
-
-    public List<String> getRulesFired() {
-        return this.rulesFired;
-    }
-
-    public void setRulesFired(List<String> rulesFired) {
-        this.rulesFired = rulesFired;
-    }
-
     public void afterMatchFired(AfterMatchFiredEvent event) {
-
         logger.debug("Firing Rule: rule=" + event.getMatch().getRule().getName());
-		rulesFired.add(event.getMatch().getRule().getName());
 	}
 
     public void agendaGroupPopped(AgendaGroupPoppedEvent event) {

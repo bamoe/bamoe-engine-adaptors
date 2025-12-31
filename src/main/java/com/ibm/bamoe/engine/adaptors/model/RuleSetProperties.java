@@ -15,6 +15,7 @@ public class RuleSetProperties {
     private boolean ruleAgendaListenerEnabled = false;
     private boolean ruleWorkingMemoryListenerEnabled = false;
     private boolean processListenerEnabled = false;
+    private boolean ruleTraceEnabled = false;
 
     public String getName() {
         return this.name;
@@ -115,9 +116,21 @@ public class RuleSetProperties {
     public void setProcessListenerEnabled(boolean processListenerEnabled) {
         this.processListenerEnabled = processListenerEnabled;
     }
-    
+
+    public boolean isRuleTraceEnabled() {
+        return this.ruleTraceEnabled;
+    }
+
+    public boolean getRuleTraceEnabled() {
+        return this.ruleTraceEnabled;
+    }
+
+    public void setRuleTraceEnabled(boolean ruleTraceEnabled) {
+        this.ruleTraceEnabled = ruleTraceEnabled;
+    }
+   
     @Override
     public String toString() {
-        return "[RuleSetProperties: name=" + name + ", releaseId=" + releaseId + ", kieBaseName=" + kieBaseName + ", kieSessionName=" + kieSessionName + ", kieSessionType=" + kieSessionType + ", kieContainerType=" + kieContainerType + ", ruleFlowName=" + ruleFlowName + ", ruleFlowGroup" + ruleFlowGroup + ", ruleAgendaListenerEnabled=" + ruleAgendaListenerEnabled + ", ruleWorkingMemoryListenerEnabled=" + ruleWorkingMemoryListenerEnabled + ", processListenerEnabled=" + processListenerEnabled + "]";
+        return "[RuleSetProperties: name=" + name + ", releaseId=" + releaseId + ", kieBaseName=" + kieBaseName + ", kieSessionName=" + kieSessionName + ", kieSessionType=" + kieSessionType + ", kieContainerType=" + kieContainerType + ", ruleFlowName=" + ruleFlowName + ", ruleFlowGroup" + ruleFlowGroup + ", ruleTraceEnabled= " + ruleTraceEnabled + ", ruleAgendaListenerEnabled=" + ruleAgendaListenerEnabled + ", ruleWorkingMemoryListenerEnabled=" + ruleWorkingMemoryListenerEnabled + ", processListenerEnabled=" + processListenerEnabled + "]";
     }
 }
